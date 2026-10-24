@@ -1,0 +1,20 @@
+name: Build
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: unzip-action@v1
+        with:
+          zipFile: doomscroll-brake-android.zip
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: gradle
+      - run: cd doomscroll-brake-android && chmod +x gradlew && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: doomscroll-brake-android/app/build/outputs/apk/debug/app-debug.apk
