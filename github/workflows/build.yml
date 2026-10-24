@@ -1,0 +1,47 @@
+name: Build Doomscroll Brake APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Extract Android app from zip
+      run: |
+        unzip -q doomscroll-brake-android.zip
+        ls -la doomscroll-brake-android/
+        
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Make gradlew executable
+      run: chmod +x doomscroll-brake-android/gradlew
+
+    - name: Build APK
+      run: |
+        cd doomscroll-brake-android
+        ./gradlew assembleDebug
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: doomscroll-brake-apk
+        path: doomscroll-brake-android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 7
+        
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: doomscroll-brake-android/app/build/outputs/apk/debug/app-debug.apk
